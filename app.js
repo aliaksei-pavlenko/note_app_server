@@ -1,7 +1,12 @@
 const express = require('express');
 const fs = require('fs');
+const bodyParser = require('body-parser');
 
 const app = express();
+
+let addNote = require('./addNote');
+let deleteNote = require('./deleteNote');
+let updateNote = require('./updateNote');
 
 // CORS
 app.use(function(req, res, next) {
@@ -13,18 +18,21 @@ app.use(function(req, res, next) {
 
 
 // Bodyparser
-app.use(express.json({extended: false}));
+// app.use(express.json({extended: false}));
+const jsonParser = bodyParser.json();
+const textParser = bodyParser.text();
 
 
 // Create
-app.post('/',(req,res)=>{
-    fs.writeFileSync('store.json',JSON.stringify(req.body));
+app.post('/',textParser,(req,res)=>{
+    addNote(req.body);
     res.send(fs.readFileSync('store.json').toString());
 })
 
 // Update
-app.put('/',(req,res)=>{
-    
+app.put('/',jsonParser,(req,res)=>{
+    updateNote(req.body.id,req.body.newtext);
+    res.send(fs.readFileSync('store.json').toString());
 })
 
 // Read
@@ -33,14 +41,14 @@ app.get('/',(req,res)=>{
 })
 
 // Delete
-app.delete('/',(req,res)=>{
-    fs.writeFileSync('store.json',JSON.stringify(req.body));
+app.delete('/',textParser,(req,res)=>{
+    deleteNote(Number(req.body));
     res.send(fs.readFileSync('store.json').toString());
 })
 
 
 
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 9000;
 
 app.listen(PORT, console.log(`Server started on port ${PORT}`));
